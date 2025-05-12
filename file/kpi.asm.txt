@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KPI ASM</title>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; margin: 20px; font-size: 12px;">
+    <div style="padding: 10px; background-color: rgb(255, 255, 255); border-radius: 15px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); font-size: 12px; width: 100%; max-width: 800px; margin: auto;">
+        <p><strong>Dear Anh/Chị ASM,</strong></p>
+        <p>tuxung gửi KPI tháng var_kibaocao. Nhờ anh/chị kiểm tra và phản hồi trước deadline giúp tuxung.</p>
+        <p><strong style="color: #ff0000;">Deadline: var_deadline.</strong></p>
+        <p><i style="color: #ff0000;">is_new</i></p> 
+        <p>Sau thời gian deadline, tuxung sẽ tiến hành gửi đến Phòng Nhân Sự theo đúng thời gian quy định, nhằm mục đích kịp chi trả lương hàng tháng.</p>
+        <p><i>(Chi tiết anh/chị vui lòng xem file đính kèm giúp tuxung)</i></p>
+        <p>tuxung cảm ơn anh/chị.</p>
+        <div style="padding: 5px; border-top: 1px solid #ddd; margin-top: 20px; font-size: 12px;">
+            <p style="margin: 5px 0;"><strong>Khang, Võ Duy (Mr.)</strong><br>Chuyên viên Phân tích và Báo cáo tài chính</p>
+            <p style="margin: 5px 0;"><strong>Kế toán | FPT Retail JSC</strong></p>
+            <p style="margin: 5px 0;">A  Toà 678, 67 Hoàng Văn Thái, phường Tân Phú, quận 7, Hồ Chí Minh, Việt Nam</p>
+            <p style="margin: 5px 0;">M  0386917831</p>
+            <p style="margin: 5px 0;">E   <a href="mailto:khangvd4@fpt.com" style="color: #007bff;">khangvd4@fpt.com</a></p>
+            <p style="margin: 5px 0;">W  <a href="https://fptshop.com.vn/" style="color: #007bff;">https://fptshop.com.vn/</a> | <a href="https://nhathuoclongchau.com.vn/" style="color: #007bff;">https://nhathuoclongchau.com.vn/</a></p>
+        </div>
+    </div>
+</body>
+</html>

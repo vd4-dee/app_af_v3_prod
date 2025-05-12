@@ -1,0 +1,124 @@
+{% extends "index.html" %}
+
+{% block title %}Bulk Email Sender{% endblock %}
+
+{% block header %}Bulk Email Sender{% endblock %}
+
+{% block content %}
+<div class="main-panel" id="bulk-email-panel-standalone" style="display: block;">
+    <h2>Bulk Email Sender</h2>
+    <p class="subtext">Configure and send emails to multiple recipients.</p>
+    
+    {# Display flashed messages #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# Assume template loading logic is moved to the route #}
+    {# Or keep it here if templates are static and always loaded #}
+    <form id="bulk-email-form" method="POST" enctype="multipart/form-data" action="{{ url_for('email.bulk_email') }}">
+        {# CSRF token if using Flask-WTF #}
+        {# {{ form.hidden_tag() }} #}
+        
+        <div class="form-group">
+            <label for="scenario">Load Template (Optional):</label>
+            <select id="scenario" name="scenario">
+                <option value="">-- Select Template --</option>
+                {% for key, template_info in templates.items() %}
+                    <option value="{{ key }}">{{ template_info.subject }}</option>
+                {% endfor %}
+            </select>
+            <p class="subtext">Selecting a template will fill Subject and Body below.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="email-subject">Subject:</label>
+            <input type="text" id="email-subject" name="subject" required>
+        </div>
+        <div class="form-group">
+            <label for="email-body">Body:</label>
+            <textarea id="email-body" name="body" rows="6" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="email-list">Recipients List (CSV File):</label>
+            <input type="file" id="email-list" name="email_list" accept=".csv" required>
+            <p class="subtext">Upload a CSV file with emails in the first column.</p>
+        </div>
+        {# Attachment functionality removed for simplicity, can be added back if needed #}
+        {# <div class="form-group">
+            <label for="email-attachment">Attachment (Optional):</label>
+            <input type="file" id="email-attachment" name="attachment">
+        </div> #}
+        <button type="submit" id="send-email-button"><i class="fas fa-paper-plane"></i> Send Emails</button>
+        <span id="email-loading-indicator" style="display: none;">Sending... <i class="fas fa-spinner fa-spin"></i></span>
+    </form>
+    <div class="progress-status-block">
+        <h2>Email Sending Status</h2>
+        <div id="email-status-messages">
+            <p class="subtext">No recent activity.</p>
+        </div>
+    </div>
+</div>
+
+{# Add JavaScript specifically for this page if needed #}
+<script>
+    // Script to load subject/body when a template is selected
+    const scenarioSelect = document.getElementById('scenario');
+    const subjectInput = document.getElementById('email-subject');
+    const bodyTextarea = document.getElementById('email-body');
+    // Safely get templates data, default to empty object if not provided or invalid
+    let emailTemplates = {};
+    try {
+        const templatesJson = JSON.parse('{{ templates|tojson|safe if templates else "{}" }}');
+        if (typeof templatesJson === 'object' && templatesJson !== null) {
+            emailTemplates = templatesJson;
+        }
+    } catch (e) {
+        console.error("Error parsing email templates data:", e);
+    }
+
+    if (scenarioSelect && subjectInput && bodyTextarea) {
+        scenarioSelect.addEventListener('change', function() {
+            const selectedKey = this.value;
+            if (selectedKey && emailTemplates[selectedKey]) {
+                subjectInput.value = emailTemplates[selectedKey].subject || '';
+                bodyTextarea.value = emailTemplates[selectedKey].body || '';
+            } else {
+                // Optionally clear fields if no template selected or template not found
+                // subjectInput.value = '';
+                // bodyTextarea.value = '';
+            }
+        });
+    }
+    // Basic loading indicator simulation on form submit
+    const emailForm = document.getElementById('bulk-email-form');
+    const sendButton = document.getElementById('send-email-button');
+    const loadingIndicator = document.getElementById('email-loading-indicator');
+    const emailListInput = document.getElementById('email-list'); // Get file input
+    
+    if(emailForm && sendButton && loadingIndicator && subjectInput && bodyTextarea && emailListInput){
+        emailForm.addEventListener('submit', function(event){
+            // Basic validation (can be enhanced)
+            if(!subjectInput.value || !bodyTextarea.value || !emailListInput.files.length){
+                 // Prevent submission if basic validation fails, rely on HTML5 required attribute mostly
+                // event.preventDefault(); // Avoid preventing submission here, let browser handle required
+                console.warn("Form validation might be incomplete before submission.");
+                // Optionally add custom visual feedback here if needed
+                // return;
+            }
+            // Disable button and show indicator immediately if fields *seem* valid
+            // This provides better UX even if server-side validation fails later
+            sendButton.disabled = true;
+            loadingIndicator.style.display = 'inline-block';
+            // Server will redirect or re-render page after processing
+        });
+    }
+
+</script>
+{% endblock %} 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Report Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F8F9FA;">
+    <div class="login-container">
+        <div class="login-icon">
+            <i class="fas fa-user-lock"></i>
+        </div>
+        <h2 class="login-title">Sign in to use the application</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <div class="flash-message">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form method="post" class="login-form">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" required autofocus placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <div style="text-align: right; margin-bottom: 10px;">
+                <a href="{{ url_for('change_password') }}" style="font-size: 0.98rem; color: #00A1B7; text-decoration: underline;">Forgot password?</a>
+            </div>
+            <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Sign in</button>
+        </form>
+<!-- End login form -->
+    </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</body>
+</html>

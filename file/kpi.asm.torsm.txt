@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KPI ASM</title>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; margin: 20px; font-size: 12px;">
+    <div style="padding: 10px; background-color: rgb(255, 255, 255); border-radius: 15px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); font-size: 12px; width: 100%; max-width: 800px; margin: auto;">
+        <p><strong>Dear Anh/Chị RSM, PRSM,</strong></p>
+        <p>Em gửi KPI ASM vùng var_region tháng var_kibaocao.</p>
+        <p>Em đã gửi đến từng anh chị ASM rồi ạ</p>
+        <p><i>(Chi tiết anh/chị vui lòng xem file đính kèm giúp em)</i></p>
+        <p>Em cảm ơn anh/chị.</p>
+        <div style="padding: 5px; border-top: 1px solid #ddd; margin-top: 20px; font-size: 12px;">
+            <p style="margin: 5px 0;"><strong>Khang, Võ Duy (Mr.)</strong><br>Chuyên viên Phân tích và Báo cáo tài chính</p>
+            <p style="margin: 5px 0;"><strong>Kế toán | FPT Retail JSC</strong></p>
+            <p style="margin: 5px 0;">A  Toà 678, 67 Hoàng Văn Thái, phường Tân Phú, quận 7, Hồ Chí Minh, Việt Nam</p>
+            <p style="margin: 5px 0;">M  0386917831</p>
+            <p style="margin: 5px 0;">E   <a href="mailto:khangvd4@fpt.com" style="color: #007bff;">khangvd4@fpt.com</a></p>
+            <p style="margin: 5px 0;">W  <a href="https://fptshop.com.vn/" style="color: #007bff;">https://fptshop.com.vn/</a> | <a href="https://nhathuoclongchau.com.vn/" style="color: #007bff;">https://nhathuoclongchau.com.vn/</a></p>
+        </div>
+    </div>
+</body>
+</html>

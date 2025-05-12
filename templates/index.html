@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Report Downloader{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <aside id="sidebar">
+        <h2 class="sidebar-title">Menu</h2>
+        <nav>
+            <ul>
+                {# Check permissions from session #}
+                {% set user_role = session.get('user_role') %}
+                {% set user_permissions = session.get('user_permissions', []) %}
+
+                {# Download Reports (Index) - Requires 'web_access' or owner #}
+                {% if user_role == 'owner' or 'web_access' in user_permissions %}
+                <li><a href="{{ url_for('index') }}" class="sidebar-link {{ 'active' if request.endpoint == 'index' else '' }}" ><i class="fas fa-download sidebar-icon"></i> <span>Download Reports</span></a></li>
+                {% endif %}
+                
+                {# Bulk Email - Requires 'email.bulk' or owner #}
+                {% if user_role == 'owner' or 'email.bulk' in user_permissions %}
+                <li><a href="#" class="sidebar-link" data-target="bulk-email-panel"><i class="fas fa-envelope sidebar-icon"></i> <span>Bulk Email</span></a></li>
+                {% endif %}
+                
+                {# Schedule Download - Requires 'download.schedule' or owner #}
+                {# Assuming this still uses JS panel switching for now #}
+                {% if user_role == 'owner' or 'download.schedule' in user_permissions %}
+                <li><a href="#" class="sidebar-link" data-target="scheduling-panel"><i class="fas fa-calendar-alt sidebar-icon"></i> <span>Schedule Download</span></a></li>
+                {% endif %}
+                
+                {# Active Downloads - Requires 'download.view' or owner (Example permission) #}
+                {% if user_role == 'owner' or 'download.view' in user_permissions %}
+                <li><a href="#" class="sidebar-link" data-target="active-downloads-panel"><i class="fas fa-tasks sidebar-icon"></i> <span>Active Downloads</span></a></li>
+                {% endif %}
+                
+                {# Download History - Requires 'download.history' or owner (Example permission) #}
+                {% if user_role == 'owner' or 'download.history' in user_permissions %}
+                <li><a href="#" class="sidebar-link" data-target="log-panel"><i class="fas fa-history sidebar-icon"></i> <span>Download History</span></a></li>
+                {% endif %}
+                
+                {# Advanced Settings - Requires 'owner' only #}
+                {% if user_role == 'owner' %}
+                <li><a href="#" class="sidebar-link" data-target="advanced-settings-panel"><i class="fas fa-cog sidebar-icon"></i> <span>Advanced Settings</span></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </aside>
+
+    <div id="main-content">
+        <div id="notification" class="notification">
+            <span id="notification-message"></span>
+            <button id="notification-close" class="notification-close">×</button>
+        </div>
+
+        <h1 id="section-title" class="main-title">{% block header %}Download Reports{% endblock %}</h1>
+        <section class="suggestion-cards">
+            <div class="card" data-target="main-download-panel">
+                <i class="fas fa-download card-icon"></i>
+                <div class="card-content">
+                    <h3 class="card-title">Download Reports</h3>
+                    <p class="card-description">Configure and download multiple reports.</p>
+                </div>
+                <button class="card-button">Open</button>
+            </div>
+            <!-- <div class="card" data-target="{{ url_for('email.bulk_email') }}">
+                <i class="fas fa-envelope-open-text card-icon"></i>
+                <div class="card-content">
+                    <h3 class="card-title">Bulk Email</h3>
+                    <p class="card-description">Send emails to multiple recipients.</p>
+                </div>
+                <a href="{{ url_for('email.bulk_email') }}" class="card-button">Open</a>
+            </div> -->
+            <div class="card" data-target="scheduling-panel">
+                <i class="fas fa-calendar-check card-icon"></i>
+                <div class="card-content">
+                    <h3 class="card-title">Schedule Download</h3>
+                    <p class="card-description">Set up automated report downloads.</p>
+                </div>
+                <button class="card-button">Open</button>
+            </div>
+            <div class="card" data-target="log-panel">
+                <i class="fas fa-clipboard-list card-icon"></i>
+                <div class="card-content">
+                    <h3 class="card-title">Download History</h3>
+                    <p class="card-description">View past download activities and logs.</p>
+                </div>
+                <button class="card-button">Open</button>
+            </div>
+        </section>
+
+        <div class="main-panel" id="main-download-panel" style="display: block;">
+            <div class="config-management-block">
+                <h2>Configuration Management</h2>
+                <div class="form-group">
+                    <label for="config-name">Configuration Name:</label>
+                    <input type="text" id="config-name" placeholder="E.g., Monthly Reports">
+                    <button id="save-config-button" title="Save the current settings below as a new configuration">Save Current Config</button>
+                </div>
+                <div class="form-group">
+                    <label for="saved-configs-dropdown">Load/Delete Config:</label>
+                    <select id="saved-configs-dropdown">
+                        <option value="">-- Select Configuration --</option>
+                        <option value="" disabled>Loading configurations...</option>
+                    </select>
+                    <div class="btn-group-config">
+                        <button id="load-config-button" title="Load the selected configuration into the form below">Load</button>
+                        <button id="delete-config-button" class="delete-button" title="Delete the selected configuration">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-config-block">
+                <h2>Download Configuration</h2>
+                <form id="download-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="text" id="email" name="email" value="{{ default_email or '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <div style="display: flex; align-items: center; position: relative;">
+                            <input type="password" id="password" name="password" value="{{ default_password or '' }}" required style="padding-right: 36px; flex: 1;">
+                            <button type="button" id="toggle-password-visibility" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.25em; color: #333; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; padding: 0;" tabindex="-1" aria-label="Show/Hide Password"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="table-controls">
+                        <button type="button" id="add-row-button" title="Add another report row"><i class="fas fa-plus"></i> Add Report</button>
+                    </div>
+                    <div class="table-controls" style="display: flex; align-items: center; gap: 16px; margin-bottom: 10px;">
+                        <button type="submit" id="download-button" style="margin-bottom:0;"><i class="fas fa-cloud-download-alt"></i> Download All</button>
+                        <span id="loading-indicator" style="display: none;">Processing... <i class="fas fa-spinner fa-spin"></i></span>
+                        <input type="text" id="report-table-search" class="table-search" placeholder="Search reports..." autocomplete="off" style="flex:1; max-width:260px;">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="report-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Report Name</th>
+                                    <th>From Date</th>
+                                    <th>To Date</th>
+                                    <th>Chunk Size</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <select name="report_type[]" class="report-type-select" required>
+                                            <option value="">-- Select Report --</option>
+                                            <option value="" disabled>Loading reports...</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="date" name="from_date[]" required></td>
+                                    <td><input type="date" name="to_date[]" required></td>
+                                    <td><input type="text" name="chunk_size[]" value="5" placeholder="E.g.: 5 or month"></td>
+                                    <td><button type="button" class="remove-row-button" title="Remove this report row"><i class="fas fa-trash-alt"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="region-selection" style="display: none;">
+                        <label>Select Region(s) (for required reports):</label><br>
+                    </div>
+                    <br>
+
+
+                </form>
+            </div>
+
+            <div class="progress-status-block">
+                <h2>Progress Status</h2>
+                <div id="status-messages">
+                    <p class="subtext">No activity yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-panel" id="bulk-email-panel" style="display: none;">
+            <h2>Bulk Email Sender</h2>
+            <p class="subtext">Configure and send emails to multiple recipients.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form id="bulk-email-form" method="POST" enctype="multipart/form-data" action="{{ url_for('email.bulk_email') }}">
+                <div class="form-group">
+                    <label for="scenario">Load Template (Optional):</label>
+                    <select id="scenario" name="scenario">
+                        <option value="">-- Select Template --</option>
+                        {% for key, template_info in templates.items() %}
+                            <option value="{{ key }}">{{ template_info.subject }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="subtext">Selecting a template will fill Subject and Body below.</p>
+                </div>
+                <div class="form-group">
+                    <label for="email-subject">Subject:</label>
+                    <input type="text" id="email-subject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="email-body">Body:</label>
+                    <textarea id="email-body" name="body" rows="6" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="email-list">Recipients List (CSV File):</label>
+                    <input type="file" id="email-list" name="email_list" accept=".csv" required>
+                    <p class="subtext">Upload a CSV file with emails in the first column.</p>
+                </div>
+                <button type="submit" id="send-email-button"><i class="fas fa-paper-plane"></i> Send Emails</button>
+                <span id="email-loading-indicator" style="display: none;">Sending... <i class="fas fa-spinner fa-spin"></i></span>
+            </form>
+            <div class="progress-status-block">
+                <h2>Email Sending Status</h2>
+                <div id="email-status-messages">
+                    <p class="subtext">No recent activity.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-panel" id="scheduling-panel" style="display: none;">
+            <h2>Schedule Download Jobs</h2>
+            <p class="subtext">Automate your report downloads based on saved configurations.</p>
+            <div class="scheduling-config">
+                <div class="form-group">
+                    <label for="schedule-config-select">Select Config to Schedule:</label>
+                    <select id="schedule-config-select">
+                        <option value="">-- Select Saved Config --</option>
+                        <option value="" disabled>Loading configurations...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="schedule-datetime">Run At (Date & Time):</label>
+                    <input type="datetime-local" id="schedule-datetime">
+                </div>
+                <button id="schedule-button" title="Schedule the selected configuration to run once at the specified time"><i class="fas fa-clock"></i> Schedule Job</button>
+            </div>
+
+            <div class="active-schedules">
+                <h3>Active Schedules</h3>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Configuration</th>
+                                <th>Next Run Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedules-list">
+                            <tr><td colspan="3" class="subtext">No schedules available.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-panel" id="log-panel" style="display: none;">
+            <div class="log-header">
+                <h2>Download History</h2>
+                <button id="refresh-log-button" title="Refresh the download history"><i class="fas fa-sync-alt"></i> Refresh Log</button>
+            </div>
+            <p class="subtext">Review the status and details of past download attempts.</p>
+            <div id="log-summary" class="log-summary-container">
+                <div class="summary-item">Total: <span id="total-count">0</span></div>
+                <div class="summary-item success">Success: <span id="success-count">0</span></div>
+                <div class="summary-item failed">Failed: <span id="failed-count">0</span></div>
+                <div class="chart-container">
+                    <canvas id="status-chart"></canvas>
+                </div>
+            </div>
+            <div class="table-controls">
+                <input type="text" id="log-table-search" class="table-search" placeholder="Search logs...">
+            </div>
+            <div id="log-table-container" class="table-responsive">
+                <table id="log-data-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>SessionID</th>
+                            <th>Timestamp</th>
+                            <th>File Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Error Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="subtext">No log data available.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="main-panel" id="active-downloads-panel" style="display: none;">
+            <h2>Active Download Sessions</h2>
+            <div class="table-responsive">
+                <table class="data-table" id="active-downloads-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>SessionID</th>
+                            <th>Start Time</th>
+                            <th>Elapsed Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-downloads-list">
+                        <tr><td colspan="3" class="subtext">No active downloads.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="main-panel" id="advanced-settings-panel" style="display: none;">
+            <h2>Advanced Settings</h2>
+            <p class="subtext">Configure application-level settings (optional).</p>
+            <div class="form-group">
+                <label for="otp-secret">OTP Secret:</label>
+                <div style="position: relative;">
+                    <input type="password" id="otp-secret" name="otp_secret" value="{{ default_otp_secret or '' }}" style="padding-right: 38px;">
+                    <button type="button" id="toggle-otp-visibility-adv" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1em; color:#333;" tabindex="-1" aria-label="Show/Hide OTP Secret"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="driver-path">ChromeDriver Path:</label>
+                <input type="text" id="driver-path" name="driver_path" value="{{ default_driver_path or '' }}">
+            </div>
+            <div class="form-group">
+                <label for="download-base-path">Download Base Path:</label>
+                <input type="text" id="download-base-path" name="download_base_path" value="{{ default_download_base_path or '' }}">
+            </div>
+            <button id="save-advanced-settings" title="Save advanced settings"><i class="fas fa-save"></i> Save Settings</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
