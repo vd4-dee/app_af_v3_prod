@@ -25,7 +25,7 @@ import os
 
 # --- Required Configuration ---
 # Load from environment variables first, then fallback to hardcoded (unsafe) example
-OTP_SECRET = 'otp' # <-- REPLACE or set ENV VAR
+OTP_SECRET = 'TAPHLYTABSKHTZWM' # <-- REPLACE or set ENV VAR
 DRIVER_PATH = 'chromedriver.exe' # Verify path or set ENV VAR
 DOWNLOAD_BASE_PATH = os.path.abspath(r"D:\OneDrive\KT\Checking") # Verify path or set ENV VAR
 
@@ -43,7 +43,7 @@ REGION_REQUIRED_REPORT_URLS = [
 
 
 # --- Validation and Warnings ---
-if not OTP_SECRET or OTP_SECRET == 'OTP_SECRET': # Check against the example value
+if not OTP_SECRET or OTP_SECRET == 'TAPHLYTABSKHTZWM': # Check against the example value
     print("\n" + "="*60)
     print("== WARNING: OTP_SECRET is using the default example value or is empty! ==")
     print("== Please configure it securely via Environment Variables or other methods. ==")
